@@ -1,0 +1,22 @@
+{
+    "name": "manufactured-complexity",
+    "version": "0.0.1",
+    "description": "Generate interactive circuit backgrounds expressed in HTML5, CSS3, and JS.",
+    "author": "Owen Trueblood <owen@owentrueblood.me>",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/jmptable/manufactured-complexity"
+    },
+    "dependencies": {
+        "express": "~3"
+    },
+    "devDependencies": {
+        "gulp": "3.8.11",
+        "gulp-nodemon": "1.0.5"
+    },
+
+    "license": "MIT"
+}
