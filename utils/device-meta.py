@@ -6,6 +6,7 @@ from PIL import Image
 import json
 
 boxColor = (0, 255, 0)
+portColors = [(255, 0, 0), (0, 0, 255)]
 
 outputFilename = ""
 outputToFile = False
@@ -67,6 +68,12 @@ def getBoxDimensions(image, x, y):
 
     return (boxWidth, boxHeight)
 
+def makeBox(x, y, width, height):
+    return {
+        'x': x, 'y': y, 'width': width, 'height': height,
+        'ports': []
+    }
+
 def getSpriteBoxes(image):
     width, height = image.size
     boxes = []
@@ -80,12 +87,34 @@ def getSpriteBoxes(image):
                 if not (x, y) in taken:
                     try:
                         w, h = getBoxDimensions(image, x, y)
-                        boxes += [{'x': x+1, 'y': y+1, 'width': w-1, 'height': h-1}]
+                        boxes += [makeBox(x+1, y+1, w-1, h-1)]
                         taken += [(x, y), (x+w, y), (x, y+h), (x+w, y+h)]
                     except BoundsError as e:
                         print("Box out of bounds at ({}, {}): {}".format(x, y, str(e)), file=sys.stderr)
                         exit(1)
+            elif color in portColors:
+                for box in filter(lambda box: boxContains(box, x, y), boxes):
+                    # port coordinates are relative to device origin
+                    portX = x - box['x']
+                    portY = y - box['y']
+
+                    box['ports'] += [{'x': portX, 'y': portY}]
+
     return boxes
+
+def boxContains(box, x, y):
+    dx = x - box['x']
+    dy = y - box['y']
+
+    return dx >= 0 and dy >= 0 and dx < box['width'] and dy < box['height']
+
+def setPorts(image, boxes):
+    width, height = image.size
+
+    for y in range(0, height):
+        for x in range(0, width):
+            color = inputImage.getpixel((x, y))
+
 
 inputImage = Image.open(inputFilename).convert('RGB')
 
