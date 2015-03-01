@@ -32,6 +32,12 @@ complexity = {
             var ctx = canvas.getContext('2d');
             ctx.imageSmoothingEnabled = false;
 
+            // draw background
+            ctx.fillStyle = "#000";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // draw devices
+
             var boxes = complexity.metadata.boxes;
 
             var maxWidth = 0;
