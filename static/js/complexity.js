@@ -56,7 +56,17 @@ complexity = {
 
             for(var i in boxes) {
                 var box = boxes[i];
+
                 ctx.drawImage(complexity.spritesheet, box.x, box.y, box.width, box.height, x, y, box.width * scale, box.height * scale);
+
+                for(var j in box.ports) {
+                    var port = box.ports[j];
+
+                    ctx.fillStyle = "#F00";
+                    ctx.beginPath();
+                    ctx.arc(x + port.x * scale + scale / 2, y + port.y * scale + scale / 2, scale / 2, 0, 2*Math.PI);
+                    ctx.fill();
+                }
 
                 x += gridWidth;
                 if(x > canvas.width) {
