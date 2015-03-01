@@ -75,11 +75,10 @@ complexity = {
                     var otherPort = pick(otherDev.box.ports);
 
                     if(otherPort !== undefined) {
-                        console.log(dev, otherDev, otherPort);
                         var startX = dev.x + p.x;
                         var startY = dev.y + p.y;
-                        var endX = otherDev.x;// + otherPort.x;
-                        var endY = otherDev.y;// + otherPort.y;
+                        var endX = otherDev.x + otherPort.x;
+                        var endY = otherDev.y + otherPort.y;
 
                         complexity.connect(canvas, startX, startY, endX, endY);
                     }
@@ -106,22 +105,119 @@ complexity = {
             pixels[i+2] = b;
         }
 
-        var x = x1, y = y1;
-        while(x != x2 || y != y2) {
-            set(x, y, 255, 255, 255);
-
-            if(x < x2) {
-                x += 1;
-            } else if(x > x2) {
-                x -= 1;
-            }
-
-            if(y < y2) {
-                y += 1;
-            } else if(y > y2) {
-                y -= 1;
-            }
+        function equal(a, b) {
+            return a.x == b.x && a.y == b.y;
         }
+
+        function dist(a, b) {
+            return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
+        }
+
+        function costEstimate(start, goal) {
+            return dist(start, goal);
+        }
+
+        function lowestCost(nodes, cost) {
+            var lowest = nodes[0];
+
+            for(var i=0; i < nodes.length; i++) {
+                var n = nodes[i];
+                if(cost[JSON.stringify(n)] < cost[JSON.stringify(lowest)]) { lowest = n; }
+            }
+
+            return lowest;
+        }
+
+        function getNeighbors(node) {
+            return [
+                {x: node.x, y: node.y+1},
+                {x: node.x, y: node.y-1},
+                {x: node.x+1, y: node.y},
+                {x: node.x+1, y: node.y+1},
+                {x: node.x+1, y: node.y-1},
+                {x: node.x-1, y: node.y},
+                {x: node.x-1, y: node.y+1},
+                {x: node.x-1, y: node.y-1}
+            ]
+        }
+
+        function path(previous, current) {
+            var thepath = [current];
+
+            while(previous[JSON.stringify(current)] !== undefined) {
+                current = previous[JSON.stringify(current)];
+                thepath.push(current);
+            }
+
+            return thepath;
+        }
+
+        function containsNode(list, node) {
+            for(var i = 0; i < list.length; i++) {
+                if(equal(list[i], node)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        function findPath(start, goal) {
+            var s = JSON.stringify;
+
+            var evaluated = [];
+            var next = [start];
+            var previous = {};
+
+            var cost = {};
+            cost[s(start)] = 0;
+            var costThrough = {};
+            costThrough[s(start)] = cost[s(start)] + costEstimate(start, goal);
+
+            while(next.length != 0) {
+                var current = lowestCost(next, costThrough);
+
+                //console.log(goal.x - current.x, goal.y - current.y, equal(current, goal));
+                if(equal(current, goal)) {
+                    return path(previous, goal);
+                }
+
+                var index = next.indexOf(current);
+                next.splice(index, 1);
+
+                if(!containsNode(evaluated, current))
+                    evaluated.push(current);
+
+                var neighbors = getNeighbors(current);
+
+                for(var i = 0; i < neighbors.length; i++) {
+                    var neighbor = neighbors[i];
+
+                    // if we haven't looked at this neighbor
+                    if(!containsNode(evaluated, neighbor)) {
+                        // cumulative cost of path to this neighbor
+                        var neighborCost = cost[s(current)] + dist(current, neighbor);
+
+                        if(!containsNode(next, neighbor) || neighborCost < cost[s(neighbor)]) {
+                            previous[s(neighbor)] = current;
+
+                            cost[s(neighbor)] = neighborCost;
+                            costThrough[s(neighbor)] = cost[s(neighbor)] + costEstimate(neighbor, goal);
+
+                            if(!containsNode(next, neighbor)) {
+                                next.push(neighbor);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return [];
+        }
+
+        findPath({x: x1, y: y1}, {x: x2, y: y2}).forEach(function(node) {
+            set(node.x, node.y, 255, 255, 255);
+        });
 
         ctx.putImageData(imageData, 0, 0);
     },
