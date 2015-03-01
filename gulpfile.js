@@ -17,7 +17,8 @@ gulp.task('devices', function() {
 });
 
 gulp.task('devices-watch', function() {
-    gulp.watch("static/assets/devices.png", ['devices']);
+    gulp.watch(["static/assets/devices.png",
+                "utils/device-meta.py"], ['devices']);
 });
 
 gulp.task('serve', ['devices-watch'], function () {
