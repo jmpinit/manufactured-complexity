@@ -80,7 +80,7 @@ def getSpriteBoxes(image):
                 if not (x, y) in taken:
                     try:
                         w, h = getBoxDimensions(image, x, y)
-                        boxes += [{'x': x, 'y': y, 'width': w, 'height': h}]
+                        boxes += [{'x': x+1, 'y': y+1, 'width': w-1, 'height': h-1}]
                         taken += [(x, y), (x+w, y), (x, y+h), (x+w, y+h)]
                     except BoundsError as e:
                         print("Box out of bounds at ({}, {}): {}".format(x, y, str(e)), file=sys.stderr)
