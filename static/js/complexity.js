@@ -7,13 +7,13 @@ complexity = {
         var metaTask = $.Deferred();
 
         var spritesheet = new Image();
-        spritesheet.src = '/assets/devices.png';
+        spritesheet.src = '/images/devices.png';
         spritesheet.addEventListener("load", function() {
             complexity.spritesheet = spritesheet;
             spriteTask.resolve();
         }, false);
 
-        $.getJSON("/assets/devices.json", function(data) {
+        $.getJSON("/data/devices.json", function(data) {
             complexity.metadata = data;
             metaTask.resolve();
         });

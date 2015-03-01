@@ -1,8 +1,8 @@
 var express    = require('express');
 var app        = express();
 
-console.log(__dirname + '/static');
-app.use(express.static(__dirname + '/static/'));
+console.log(__dirname + '/www');
+app.use(express.static(__dirname + '/www/'));
 app.use(express.logger('dev'));
 
 app.config = require("./config");

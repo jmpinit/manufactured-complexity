@@ -1,25 +1,27 @@
 {
-    "name": "manufactured-complexity",
-    "version": "0.0.1",
-    "description": "Generate interactive circuit backgrounds expressed in HTML5, CSS3, and JS.",
-    "author": "Owen Trueblood <owen@owentrueblood.me>",
-    "scripts": {
-        "start": "node server.js"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/jmptable/manufactured-complexity"
-    },
-    "dependencies": {
-        "express": "~3"
-    },
-    "devDependencies": {
-        "gulp": "3.8.11",
-        "gulp-util": "3.0.4",
-        "gulp-nodemon": "1.0.5",
-        "gulp-tap": "^0.1.3",
-        "gulp-run": "1.6.6"
-    },
-
-    "license": "MIT"
+  "name": "manufactured-complexity",
+  "version": "0.0.1",
+  "description": "Generate interactive circuit backgrounds expressed in HTML5, CSS3, and JS.",
+  "author": "Owen Trueblood <owen@owentrueblood.me>",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jmptable/manufactured-complexity"
+  },
+  "dependencies": {
+    "express": "~3"
+  },
+  "devDependencies": {
+    "gulp": "~3.8.11",
+    "gulp-util": "3.0.4",
+    "gulp-nodemon": "1.0.5",
+    "gulp-tap": "^0.1.3",
+    "gulp-run": "1.6.6",
+    "gulp-intermediate": "3.0.1",
+    "gulp-streamify": "0.0.4",
+    "merge-stream": "~0.1.7"
+  },
+  "license": "MIT"
 }
