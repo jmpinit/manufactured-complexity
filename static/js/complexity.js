@@ -1,4 +1,21 @@
+var pick = function(arr) {
+    if(arr.length > 0) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    } else {
+        return undefined;
+    }
+}
+
+function Device(box, x, y) {
+    this.box = box;
+
+    this.x = x;
+    this.y = y;
+}
+
 complexity = {
+    CONNECTIVITY: 0.5,
+
     metadata: undefined,
     spritesheet: undefined,
 
@@ -23,6 +40,90 @@ complexity = {
     },
 
     manufacture: function(canvas) {
+        var ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+
+        // draw background
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // pick some devices
+        var devices = []
+        for(var i = 0; i < 4; i++) {
+            var x = Math.floor(Math.random() * canvas.width);
+            var y = Math.floor(Math.random() * canvas.height);
+
+            devices.push(new Device(pick(complexity.metadata.boxes), x, y));
+        }
+
+        // get ports
+        var ports = [];
+        devices.forEach(function(dev) {
+            ports = ports.concat(dev.ports);
+        });
+
+        // draw devices
+        devices.forEach(function(dev) {
+            ctx.drawImage(complexity.spritesheet, dev.box.x, dev.box.y, dev.box.width, dev.box.height, dev.x, dev.y, dev.box.width, dev.box.height);
+        });
+
+        // randomly connect ports
+        devices.forEach(function(dev) {
+            dev.box.ports.forEach(function(p) {
+                if(Math.random() < complexity.CONNECTIVITY) {
+                    var otherDev = pick(devices); // TODO ensure not same device
+                    var otherPort = pick(otherDev.box.ports);
+
+                    if(otherPort !== undefined) {
+                        console.log(dev, otherDev, otherPort);
+                        var startX = dev.x + p.x;
+                        var startY = dev.y + p.y;
+                        var endX = otherDev.x;// + otherPort.x;
+                        var endY = otherDev.y;// + otherPort.y;
+
+                        complexity.connect(canvas, startX, startY, endX, endY);
+                    }
+                }
+            });
+        });
+    },
+
+    connect: function(canvas, x1, y1, x2, y2) {
+        x1 = Math.floor(x1);
+        y1 = Math.floor(y1);
+        x2 = Math.floor(x2);
+        y2 = Math.floor(y2);
+
+        var ctx = canvas.getContext('2d');
+
+        var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        var pixels = imageData.data;
+
+        function set(x, y, r, g, b) {
+            var i = 4 * (y * imageData.width + x);
+            pixels[i  ] = r;
+            pixels[i+1] = g;
+            pixels[i+2] = b;
+        }
+
+        var x = x1, y = y1;
+        while(x != x2 || y != y2) {
+            set(x, y, 255, 255, 255);
+
+            if(x < x2) {
+                x += 1;
+            } else if(x > x2) {
+                x -= 1;
+            }
+
+            if(y < y2) {
+                y += 1;
+            } else if(y > y2) {
+                y -= 1;
+            }
+        }
+
+        ctx.putImageData(imageData, 0, 0);
     },
 
     debug: {
