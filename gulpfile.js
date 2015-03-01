@@ -32,9 +32,6 @@ gulp.task('devices', function() {
 
     var spritesheet = gulp.src(deviceImagePath)
         .pipe(streamify(intermediate({ output: '.' }, function (tempDir, cb, files) {
-            console.log("tempDir:", tempDir);
-            console.log("files:", JSON.stringify(files[0].path));
-
             var script = util.format('%s/utils/strip-meta.py', __dirname);
 
             var fn = path.basename(files[0].path);
