@@ -6,7 +6,17 @@
 <body>
     <h1>Manufactured Complexity</h1>
 
+    <canvas id="viewport" width="300" height="300"></canvas>
+
     <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
     <script src="js/complexity.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        var canvas = $("#viewport")[0];
+
+        complexity.load(function() {
+            complexity.debug.drawDevices(canvas, 4);
+        });
+    </script>
 </body>
 </html>
