@@ -49,7 +49,7 @@ complexity = {
 
         // pick some devices
         var devices = []
-        for(var i = 0; i < 4; i++) {
+        for(var i = 0; i < 6; i++) {
             var x = Math.floor(Math.random() * canvas.width);
             var y = Math.floor(Math.random() * canvas.height);
 
@@ -105,6 +105,15 @@ complexity = {
             pixels[i+2] = b;
         }
 
+        function get(x, y) {
+            var i = 4 * (y * imageData.width + x);
+            var r = pixels[i];
+            var g = pixels[i+1];
+            var b = pixels[i+2];
+
+            return {'r': r, 'g': g, 'b': b};
+        }
+
         function equal(a, b) {
             return a.x == b.x && a.y == b.y;
         }
@@ -138,7 +147,24 @@ complexity = {
                 {x: node.x-1, y: node.y},
                 {x: node.x-1, y: node.y+1},
                 {x: node.x-1, y: node.y-1}
-            ]
+            ];
+        }
+
+        function getValidNeighbors(node) {
+            var candidates = getNeighbors(node);
+
+            var survivors = [];
+            for(var i = 0; i < candidates.length; i++) {
+                var c = candidates[i];
+                var col = get(c.x, c.y);
+
+                if(col.r > 0 || col.g > 0 || col.b > 0) continue;
+                if(c.x < 0 || c.x > canvas.width || c.y < 0 || c.y > canvas.height) continue;
+
+                survivors.push(c);
+            }
+
+            return survivors;
         }
 
         function path(previous, current) {
@@ -188,7 +214,7 @@ complexity = {
                 if(!containsNode(evaluated, current))
                     evaluated.push(current);
 
-                var neighbors = getNeighbors(current);
+                var neighbors = getValidNeighbors(current);
 
                 for(var i = 0; i < neighbors.length; i++) {
                     var neighbor = neighbors[i];
@@ -197,6 +223,13 @@ complexity = {
                     if(!containsNode(evaluated, neighbor)) {
                         // cumulative cost of path to this neighbor
                         var neighborCost = cost[s(current)] + dist(current, neighbor);
+
+                        getNeighbors(neighbor).forEach(function(n) {
+                            var col = get(n.x, n.y);
+
+                            if(col.r > 0 || col.g > 0 || col.b > 0)
+                                neighborCost += 4;
+                        });
 
                         if(!containsNode(next, neighbor) || neighborCost < cost[s(neighbor)]) {
                             previous[s(neighbor)] = current;
