@@ -6,7 +6,7 @@ var pick = function(arr) {
     }
 }
 
-function Device(box, x, y) {
+var Device = function(box, x, y) {
     this.box = box;
 
     this.x = x;
