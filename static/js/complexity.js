@@ -86,7 +86,7 @@ complexity = {
             });
         });
     },
-
+    
     connect: function(canvas, x1, y1, x2, y2) {
         x1 = Math.floor(x1);
         y1 = Math.floor(y1);
@@ -114,142 +114,54 @@ complexity = {
             return {'r': r, 'g': g, 'b': b};
         }
 
-        function equal(a, b) {
-            return a.x == b.x && a.y == b.y;
-        }
+        var walkability = [];
+        for(var y = 0; y < canvas.height; y++) {
+            var row = [];
+            for(var x = 0; x < canvas.width; x++) {
+                var c = get(x, y);
 
-        function dist(a, b) {
-            return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
-        }
-
-        function costEstimate(start, goal) {
-            return dist(start, goal);
-        }
-
-        function lowestCost(nodes, cost) {
-            var lowest = nodes[0];
-
-            for(var i=0; i < nodes.length; i++) {
-                var n = nodes[i];
-                if(cost[JSON.stringify(n)] < cost[JSON.stringify(lowest)]) { lowest = n; }
-            }
-
-            return lowest;
-        }
-
-        function getNeighbors(node) {
-            return [
-                {x: node.x, y: node.y+1},
-                {x: node.x, y: node.y-1},
-                {x: node.x+1, y: node.y},
-                {x: node.x+1, y: node.y+1},
-                {x: node.x+1, y: node.y-1},
-                {x: node.x-1, y: node.y},
-                {x: node.x-1, y: node.y+1},
-                {x: node.x-1, y: node.y-1}
-            ];
-        }
-
-        function getValidNeighbors(node) {
-            var candidates = getNeighbors(node);
-
-            var survivors = [];
-            for(var i = 0; i < candidates.length; i++) {
-                var c = candidates[i];
-                var col = get(c.x, c.y);
-
-                if(col.r > 0 || col.g > 0 || col.b > 0) continue;
-                if(c.x < 0 || c.x > canvas.width || c.y < 0 || c.y > canvas.height) continue;
-
-                survivors.push(c);
-            }
-
-            return survivors;
-        }
-
-        function path(previous, current) {
-            var thepath = [current];
-
-            while(previous[JSON.stringify(current)] !== undefined) {
-                current = previous[JSON.stringify(current)];
-                thepath.push(current);
-            }
-
-            return thepath;
-        }
-
-        function containsNode(list, node) {
-            for(var i = 0; i < list.length; i++) {
-                if(equal(list[i], node)) {
-                    return true;
+                if(c.r > 0 || c.g > 0 || c.b > 0) {
+                    row.push(1);
+                } else {
+                    row.push(0);
                 }
             }
-
-            return false;
+            walkability[y] = row;
         }
 
-        function findPath(start, goal) {
-            var s = JSON.stringify;
+        function claustrophobia(x, y) {
+            return  (x > 0)?
+                        (1 - walkability[y][x-1]) : 1 +
+                    (x < canvas.width-1)?
+                        (1 - walkability[y][x+1]) : 1 +
+                    (x > 0 && y > 0)?
+                        (1 - walkability[y-1][x-1]) : 1 +
+                    (y > 0)?
+                        (1 - walkability[y-1][x]) : 1 +
+                    (y > 0 && x < canvas.width-1)?
+                        (1 - walkability[y-1][x+1]) : 1 +
+                    (y < canvas.height-1 && x > 0)?
+                        (1 - walkability[y+1][x-1]) : 1 +
+                    (y < canvas.height-1)?
+                        (1 - walkability[y+1][x]) : 1 +
+                    (y < canvas.height-1 && x < canvas.width-1)?
+                        (1 - walkability[y+1][x+1]) : 1;
+        }
 
-            var evaluated = [];
-            var next = [start];
-            var previous = {};
-
-            var cost = {};
-            cost[s(start)] = 0;
-            var costThrough = {};
-            costThrough[s(start)] = cost[s(start)] + costEstimate(start, goal);
-
-            while(next.length != 0) {
-                var current = lowestCost(next, costThrough);
-
-                //console.log(goal.x - current.x, goal.y - current.y, equal(current, goal));
-                if(equal(current, goal)) {
-                    return path(previous, goal);
-                }
-
-                var index = next.indexOf(current);
-                next.splice(index, 1);
-
-                if(!containsNode(evaluated, current))
-                    evaluated.push(current);
-
-                var neighbors = getValidNeighbors(current);
-
-                for(var i = 0; i < neighbors.length; i++) {
-                    var neighbor = neighbors[i];
-
-                    // if we haven't looked at this neighbor
-                    if(!containsNode(evaluated, neighbor)) {
-                        // cumulative cost of path to this neighbor
-                        var neighborCost = cost[s(current)] + dist(current, neighbor);
-
-                        getNeighbors(neighbor).forEach(function(n) {
-                            var col = get(n.x, n.y);
-
-                            if(col.r > 0 || col.g > 0 || col.b > 0)
-                                neighborCost += 4;
-                        });
-
-                        if(!containsNode(next, neighbor) || neighborCost < cost[s(neighbor)]) {
-                            previous[s(neighbor)] = current;
-
-                            cost[s(neighbor)] = neighborCost;
-                            costThrough[s(neighbor)] = cost[s(neighbor)] + costEstimate(neighbor, goal);
-
-                            if(!containsNode(next, neighbor)) {
-                                next.push(neighbor);
-                            }
-                        }
-                    }
-                }
+        var grid = new PF.Grid(canvas.width, canvas.height, walkability);
+        var finder = new PF.AStarFinder({
+            allowDiagonal: true,
+            dontCrossCorners: true,
+            heuristic: function(dx, dy) {
+                var dist = Math.min(dx, dy);
+                return dist + 10 * claustrophobia(dx, dy);
             }
+        });
+        var path = finder.findPath(x1, y1, x2, y2, grid);
 
-            return [];
-        }
-
-        findPath({x: x1, y: y1}, {x: x2, y: y2}).forEach(function(node) {
-            set(node.x, node.y, 255, 255, 255);
+        set(x1, y1, 255, 255, 255);
+        path.forEach(function(coord) {
+            set(coord[0], coord[1], 255, 255, 255);
         });
 
         ctx.putImageData(imageData, 0, 0);
